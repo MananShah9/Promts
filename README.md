@@ -58,9 +58,12 @@ CREATE TABLE Users (
     PasswordHash VARCHAR(255),
     GoogleAuthID VARCHAR(255),
     AppleAuthID VARCHAR(255),
+    Address VARCHAR(255), -- New field for address
+    SocietyID INTEGER REFERENCES Societies(SocietyID), -- New field for SocietyID
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 Societies Table
 CREATE TABLE Societies (
     SocietyID SERIAL PRIMARY KEY,
@@ -97,6 +100,7 @@ CREATE TABLE Feedbacks (
     ProductID INTEGER REFERENCES Products(ProductID),
     Rating INTEGER,
     Review TEXT,
+    FeedbackTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Updated to include timestamp
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 Payments Table
@@ -106,9 +110,10 @@ CREATE TABLE Payments (
     CustomerID INTEGER REFERENCES Users(UserID),
     Amount DECIMAL,
     Status VARCHAR(50),
-    Date DATE,
-    Time TIME
+    PaymentDateTime TIMESTAMP, -- Combined Date and Time into a single field
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 VendorSocieties Junction Table (For Many-to-Many Relationship between Vendors and Societies)
 CREATE TABLE VendorSocieties (
     VendorID INTEGER REFERENCES Users(UserID),
