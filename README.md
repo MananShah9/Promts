@@ -1,3 +1,59 @@
+
+import requests
+import time
+import csv
+
+# Base configuration for the DMD API endpoint
+url = "https://qsctoreporting.uk.hsbc:7000/DMD/table?responseDataFormat=keyValue"
+headers = {'Content-Type': 'application/json'}
+
+# Prepare the request bodies
+body1 = {
+    "dimensionList": ["Pod ID", "Month Year", "Incident Number SN"],
+    "measureList": ["API - Incidents"],
+    "selections": [
+        {"FieldName": "Year", "Values": [2024], "fieldType": "N"},
+        {"FieldName": "Month", "Values": [3], "fieldType": "N"}
+    ]
+}
+
+body2 = dict(body1, **{"requestor": "Teambook"})  # Adding an additional field to the second body
+
+# Prepare to store results
+results = [("Run", "Request 1 Time (s)", "Request 2 Time (s)", "Difference (s)")]
+
+# Run the loop 10 times
+for run in range(1, 11):
+    # Measure response time for the first request
+    start_time1 = time.time()
+    response1 = requests.post(url, json=body1, headers=headers)
+    elapsed_time1 = time.time() - start_time1
+
+    # Measure response time for the second request
+    start_time2 = time.time()
+    response2 = requests.post(url, json=body2, headers=headers)
+    elapsed_time2 = time.time() - start_time2
+
+    # Store results
+    results.append((run, elapsed_time1, elapsed_time2, abs(elapsed_time1 - elapsed_time2)))
+
+    # Print progress
+    print(f"Run {run} completed.")
+
+    # Wait for 1 minute before the next run
+    time.sleep(60)
+
+# Write results to CSV file
+with open('api_response_times.csv', 'w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerows(results)
+
+print("Results have been saved to 'api_response_times.csv'.")
+
+
+
+
+
 # FLOW
 The local farm is a startup. 2 vendors drive trucks to societies every day from 9.30am to 2.30 pm and serve as mini supermarkets. All members of society can buy fruits vegetables and other daily items from this market. The journey is as follows
 1. Admin adds societies, and products and assigns vendors to one or more society.
