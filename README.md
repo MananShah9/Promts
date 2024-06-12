@@ -1,3 +1,78 @@
+const axios = require('axios');
+const { createObjectCsvWriter } = require('csv-writer');
+const { Octokit } = require('@octokit/core');
+const { performance } = require('perf_hooks');
+
+const GIT_TOKEN = process.env.GITHUB_TOKEN; // Set your GitHub token in environment variables
+const REPO_NAME = 'username/repo'; // Change to your repo name
+const CSV_FILE_PATH = 'response_report.csv';
+const OTHER_API_URL = 'https://api.example.com/post-report'; // Modify with the actual API URL
+
+// Define your request bodies here
+const requestBodies = [
+    { dimensionList: ["Dimension1"], measureList: ["Measure1"], selections: [{ FieldName: "Field1", Values: [2024], fieldType: "N" }] },
+    { dimensionList: ["Dimension2"], measureList: ["Measure2"], selections: [{ FieldName: "Field2", Values: [2023], fieldType: "N" }] },
+    { dimensionList: ["Dimension3"], measureList: ["Measure3"], selections: [{ FieldName: "Field3", Values: [2022], fieldType: "N" }] },
+    { dimensionList: ["Dimension4"], measureList: ["Measure4"], selections: [{ FieldName: "Field4", Values: [2021], fieldType: "N" }] },
+    { dimensionList: ["Dimension5"], measureList: ["Measure5"], selections: [{ FieldName: "Field5", Values: [2020], fieldType: "N" }] }
+];
+
+// CSV setup
+const csvWriter = createcsvWriter({
+    path: CSV_FILE_PATH,
+    header: [
+        { id: 'requestBody', title: 'REQUEST_BODY' },
+        { id: 'responseTime', title: 'RESPONSE_TIME' },
+        { id: 'responseCode', title: 'RESPONSE_CODE' }
+    ]
+});
+
+async function makeRequests() {
+    let records = [];
+
+    for (const body of requestBodies) {
+        const start = performance.now();
+        const response = await axios.get('https://qsctoreporting.uk.hsbc:7000/DMD/table?responseDataFormat=keyValue', { data: body });
+        const end = performance.now();
+
+        records.push({
+            requestBody: JSON.stringify(body),
+            responseTime: `${end - start} ms`,
+            responseCode: response.status
+        });
+    }
+
+    await csvWriter.writeRecords(records);
+    console.log('CSV report has been created.');
+
+    await uploadToGit();
+}
+
+async function uploadToGit() {
+    const octokit = new Octokit({ auth: GIT_TOKEN });
+    const content = Buffer.from(await fs.promises.readFile(CSV_FILE_PATH)).toString('base64');
+
+    const { data } = await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
+        owner: REPO_NAME.split('/')[0],
+        repo: REPO_NAME.split('/')[1],
+        path: 'path/to/folder/response_report.csv',
+        message: 'Update response report',
+        content: content
+    });
+
+    console.log('CSV file uploaded to GitHub.');
+    notifyOtherAPI(data.content.html_url);
+}
+
+async function notifyOtherAPI(gitUrl) {
+    await axios.post(OTHER_API_URL, { reportUrl: gitUrl });
+    console.log('Other API notified with Git repo URL.');
+}
+
+makeRequests();
+
+
+
 
 import requests
 import time
