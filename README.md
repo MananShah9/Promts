@@ -1,129 +1,40 @@
-const axios = require('axios');
-const { createObjectCsvWriter } = require('csv-writer');
-const { Octokit } = require('@octokit/core');
-const { performance } = require('perf_hooks');
+Certainly! Let's add a "Value Created" section to each point for clarity and emphasis on the benefits provided.
 
-const GIT_TOKEN = process.env.GITHUB_TOKEN; // Set your GitHub token in environment variables
-const REPO_NAME = 'username/repo'; // Change to your repo name
-const CSV_FILE_PATH = 'response_report.csv';
-const OTHER_API_URL = 'https://api.example.com/post-report'; // Modify with the actual API URL
+---
 
-// Define your request bodies here
-const requestBodies = [
-    { dimensionList: ["Dimension1"], measureList: ["Measure1"], selections: [{ FieldName: "Field1", Values: [2024], fieldType: "N" }] },
-    { dimensionList: ["Dimension2"], measureList: ["Measure2"], selections: [{ FieldName: "Field2", Values: [2023], fieldType: "N" }] },
-    { dimensionList: ["Dimension3"], measureList: ["Measure3"], selections: [{ FieldName: "Field3", Values: [2022], fieldType: "N" }] },
-    { dimensionList: ["Dimension4"], measureList: ["Measure4"], selections: [{ FieldName: "Field4", Values: [2021], fieldType: "N" }] },
-    { dimensionList: ["Dimension5"], measureList: ["Measure5"], selections: [{ FieldName: "Field5", Values: [2020], fieldType: "N" }] }
-];
+1. **Achievement**: We are the first team in the bank to onboard to CaaS and we helped them in the pilot phase for this feature.
+   - **Value Created**: Demonstrated leadership and innovation by pioneering the use of CaaS, setting a benchmark for other teams, and accelerating the adoption of modern infrastructure solutions within the bank.
 
-// CSV setup
-const csvWriter = createcsvWriter({
-    path: CSV_FILE_PATH,
-    header: [
-        { id: 'requestBody', title: 'REQUEST_BODY' },
-        { id: 'responseTime', title: 'RESPONSE_TIME' },
-        { id: 'responseCode', title: 'RESPONSE_CODE' }
-    ]
-});
+2. **Resiliency**:
+   - **a. High resiliency** – Daily roleswap of server and DB.
+     - **Value Created**: Ensures zero downtime deployments, minimizing service interruptions and enhancing the overall reliability of the system.
+   - **b. Env isolation between apps** – Maturing our service. No change in one env affects other.
+     - **Value Created**: Enhances security and stability by preventing cross-environment issues, leading to more predictable and manageable deployments.
+   - **c. Auto monitoring and alerting**
+     - **Value Created**: Enables proactive issue detection and resolution, reducing the time to identify and fix problems, thus improving system uptime and performance.
 
-async function makeRequests() {
-    let records = [];
+3. **Reduced Toil**:
+   - **a. Out of the box CI/CD with minimal config and bot integration**
+     - **Value Created**: Streamlines the development pipeline, reducing manual intervention and accelerating the release process, leading to faster delivery of features and fixes.
+   - **b. Managed envs** – OS, DB, language version patches and updates.
+     - **Value Created**: Reduces the operational burden on the team, ensuring that environments are always up-to-date with the latest security patches and improvements without manual effort.
+   - **c. Easy config management using repos. Example: pgmaker config and app instances config.**
+     - **Value Created**: Simplifies configuration management, promoting consistency and reducing configuration errors, thus enhancing deployment reliability and speed.
+   - **d. Easy Secrets management, email service, restabuild etc.**
+     - **Value Created**: Ensures secure handling of sensitive information and simplifies service integration, reducing the risk of security breaches and streamlining operational processes.
 
-    for (const body of requestBodies) {
-        const start = performance.now();
-        const response = await axios.get('https://qsctoreporting.uk.hsbc:7000/DMD/table?responseDataFormat=keyValue', { data: body });
-        const end = performance.now();
+**High scalability and low costs** – Autoscaling. No provisioning needed + we pay for what we use.
+   - **Value Created**: Optimizes resource usage and cost efficiency, allowing the system to scale dynamically based on demand while controlling expenses.
 
-        records.push({
-            requestBody: JSON.stringify(body),
-            responseTime: `${end - start} ms`,
-            responseCode: response.status
-        });
-    }
+**Out of the box SSO capabilities, with minimal config.**
+   - **Value Created**: Enhances user experience and security by providing seamless and secure access to services through single sign-on, reducing the need for multiple logins.
 
-    await csvWriter.writeRecords(records);
-    console.log('CSV report has been created.');
+**Helped metrics like Reduced TPAM, Increased RF, Improved resiliency**
+   - **Value Created**: Tangible improvements in key performance metrics such as TPAM (Total Preventable Adverse Metrics), Release Frequency (RF), and overall system resiliency, contributing to better service delivery and customer satisfaction.
 
-    await uploadToGit();
-}
+---
 
-async function uploadToGit() {
-    const octokit = new Octokit({ auth: GIT_TOKEN });
-    const content = Buffer.from(await fs.promises.readFile(CSV_FILE_PATH)).toString('base64');
-
-    const { data } = await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
-        owner: REPO_NAME.split('/')[0],
-        repo: REPO_NAME.split('/')[1],
-        path: 'path/to/folder/response_report.csv',
-        message: 'Update response report',
-        content: content
-    });
-
-    console.log('CSV file uploaded to GitHub.');
-    notifyOtherAPI(data.content.html_url);
-}
-
-async function notifyOtherAPI(gitUrl) {
-    await axios.post(OTHER_API_URL, { reportUrl: gitUrl });
-    console.log('Other API notified with Git repo URL.');
-}
-
-makeRequests();
-
-
-
-
-import requests
-import time
-import csv
-
-# Base configuration for the DMD API endpoint
-url = "https://qsctoreporting.uk.hsbc:7000/DMD/table?responseDataFormat=keyValue"
-headers = {'Content-Type': 'application/json'}
-
-# Prepare the request bodies
-body1 = {
-    "dimensionList": ["Pod ID", "Month Year", "Incident Number SN"],
-    "measureList": ["API - Incidents"],
-    "selections": [
-        {"FieldName": "Year", "Values": [2024], "fieldType": "N"},
-        {"FieldName": "Month", "Values": [3], "fieldType": "N"}
-    ]
-}
-
-body2 = dict(body1, **{"requestor": "Teambook"})  # Adding an additional field to the second body
-
-# Prepare to store results
-results = [("Run", "Request 1 Time (s)", "Request 2 Time (s)", "Difference (s)")]
-
-# Run the loop 10 times
-for run in range(1, 11):
-    # Measure response time for the first request
-    start_time1 = time.time()
-    response1 = requests.post(url, json=body1, headers=headers)
-    elapsed_time1 = time.time() - start_time1
-
-    # Measure response time for the second request
-    start_time2 = time.time()
-    response2 = requests.post(url, json=body2, headers=headers)
-    elapsed_time2 = time.time() - start_time2
-
-    # Store results
-    results.append((run, elapsed_time1, elapsed_time2, abs(elapsed_time1 - elapsed_time2)))
-
-    # Print progress
-    print(f"Run {run} completed.")
-
-    # Wait for 1 minute before the next run
-    time.sleep(60)
-
-# Write results to CSV file
-with open('api_response_times.csv', 'w', newline='') as file:
-    writer = csv.writer(file)
-    writer.writerows(results)
-
-print("Results have been saved to 'api_response_times.csv'.")
+Feel free to add any more specific values or details that reflect the achievements and benefits accurately.
 
 
 
