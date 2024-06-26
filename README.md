@@ -1,6 +1,5 @@
 const { Pool } = require('pg');
 
-// Database configuration
 const pool = new Pool({
   user: 'AutoQlik',
   host: 'localhost',
@@ -14,10 +13,10 @@ async function updateJsonbColumn(tableName, columnName, key, newValue, condition
   try {
     const query = `
       UPDATE ${tableName}
-      SET ${columnName} = jsonb_set(${columnName}, '{${key}}', to_jsonb($1::text))
+      SET ${columnName} = jsonb_set(${columnName}, '{${key}}', $1::jsonb)
       WHERE ${condition};
     `;
-    const values = [newValue];
+    const values = [JSON.stringify(newValue)];
     const res = await client.query(query, values);
     console.log('Update successful:', res.rowCount, 'row(s) affected.');
   } catch (err) {
@@ -27,12 +26,11 @@ async function updateJsonbColumn(tableName, columnName, key, newValue, condition
   }
 }
 
-// Usage
-const tableName = 'your_table'; // Replace with your table name
-const columnName = 'your_jsonb_column'; // Replace with your JSONB column name
-const key = 'your_key'; // Replace with the key you want to update
-const newValue = 'new_value'; // Replace with the new value for the key
-const condition = "id = 1"; // Replace with your condition to identify the row(s) to update
+const tableName = 'your_table';
+const columnName = 'your_jsonb_column';
+const key = 'your_key';
+const newValue = { key1: 'value1', key2: 'value2' };
+const condition = "id = 1";
 
 updateJsonbColumn(tableName, columnName, key, newValue, condition);
 
