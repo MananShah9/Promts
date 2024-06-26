@@ -1,3 +1,41 @@
+const { Pool } = require('pg');
+
+// Database configuration
+const pool = new Pool({
+  user: 'AutoQlik',
+  host: 'localhost',
+  database: 'CXODashboard_db_dev',
+  password: 'AutoClick',
+  port: 4432,
+});
+
+async function updateJsonbColumn(tableName, columnName, key, newValue, condition) {
+  const client = await pool.connect();
+  try {
+    const query = `
+      UPDATE ${tableName}
+      SET ${columnName} = jsonb_set(${columnName}, '{${key}}', to_jsonb($1::text))
+      WHERE ${condition};
+    `;
+    const values = [newValue];
+    const res = await client.query(query, values);
+    console.log('Update successful:', res.rowCount, 'row(s) affected.');
+  } catch (err) {
+    console.error('Error updating JSONB column:', err);
+  } finally {
+    client.release();
+  }
+}
+
+// Usage
+const tableName = 'your_table'; // Replace with your table name
+const columnName = 'your_jsonb_column'; // Replace with your JSONB column name
+const key = 'your_key'; // Replace with the key you want to update
+const newValue = 'new_value'; // Replace with the new value for the key
+const condition = "id = 1"; // Replace with your condition to identify the row(s) to update
+
+updateJsonbColumn(tableName, columnName, key, newValue, condition);
+
 Certainly! Let's add a "Value Created" section to each point for clarity and emphasis on the benefits provided.
 
 ---
